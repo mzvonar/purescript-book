@@ -22,7 +22,6 @@ main =
         test "0 is even" do
           Assert.equal true
             $ isEven 0
-    {-  Move this block comment starting point to enable more tests
         test "1 is odd" do
           Assert.equal false
             $ isEven 1
@@ -89,6 +88,7 @@ main =
           $ isPrime 4
         assert "997 is prime"
           $ isPrime 997
+    {-  Move this block comment starting point to enable more tests
       suite "Exercise - cartesianProduct" do
         let
           -- Don't worry if this this testing helper function signature looks confusing.
