@@ -59,7 +59,6 @@ main :: Effect Unit
 main =
   runTest do
     runChapterExamples
-    {-  Move this block comment starting point to enable more tests
     suite "Exercise - findEntryByStreet" do
       test "Lookup existing" do
         Assert.equal (Just john)
@@ -78,6 +77,7 @@ main =
       Assert.equal book
         $ removeDuplicates bookWithDuplicate
 
+    {-  Move this block comment starting point to enable more tests
 -}
 runChapterExamples :: TestSuite
 runChapterExamples = do

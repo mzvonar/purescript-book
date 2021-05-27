@@ -17,12 +17,12 @@ main :: Effect Unit
 main =
   runTest do
     runChapterExamples
-    {-  Move this block comment starting point to enable more tests
     suite "Exercise Group - Recursion" do
       suite "Exercise - isEven" do
         test "0 is even" do
           Assert.equal true
             $ isEven 0
+    {-  Move this block comment starting point to enable more tests
         test "1 is odd" do
           Assert.equal false
             $ isEven 1
