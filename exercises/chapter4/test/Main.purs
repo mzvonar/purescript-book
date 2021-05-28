@@ -17,6 +17,7 @@ main :: Effect Unit
 main =
   runTest do
     runChapterExamples
+    
     suite "Exercise Group - Recursion" do
       suite "Exercise - isEven" do
         test "0 is even" do
@@ -88,7 +89,6 @@ main =
           $ isPrime 4
         assert "997 is prime"
           $ isPrime 997
-    {-  Move this block comment starting point to enable more tests
       suite "Exercise - cartesianProduct" do
         let
           -- Don't worry if this this testing helper function signature looks confusing.
@@ -133,6 +133,8 @@ main =
           $ allTrue [ true, true, true ]
         assertFalse "some elements false"
           $ allTrue [ true, false, true ]
+        assertFalse "empty array"
+          $ allTrue []
       suite "Exercise - fibTailRec" do
         test "Verify 0" do
           Assert.equal 0
@@ -175,6 +177,7 @@ main =
           $ Assert.equal (Nothing)
           $ map filename
           $ whereIs root "cat"
+    {-  Move this block comment starting point to enable more tests
       suite "Exercise - largestSmallest" do
         let
           testls :: String -> Array String -> Path -> TestSuite
