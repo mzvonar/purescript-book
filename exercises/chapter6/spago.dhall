@@ -6,9 +6,11 @@ You can edit this file as you like.
 , dependencies =
   [ "arrays"
   , "console"
+  , "control"
   , "effect"
   , "either"
   , "foldable-traversable"
+  , "formatters"
   , "lists"
   , "maybe"
   , "newtype"
