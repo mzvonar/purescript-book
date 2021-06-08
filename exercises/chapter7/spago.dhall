@@ -12,6 +12,7 @@ You can edit this file as you like.
   , "integers"
   , "lists"
   , "maybe"
+  , "newtype"
   , "prelude"
   , "psci-support"
   , "strings"
