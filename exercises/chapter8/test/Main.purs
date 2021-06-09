@@ -19,7 +19,6 @@ main :: Effect Unit
 main =
   runTest do
     runChapterExamples
-    {-  Move this block comment starting point to enable more tests
     suite "Exercises Group - Monads and Applicatives" do
       suite "third" do
         test "No elements"
@@ -59,6 +58,7 @@ main =
             $ filterM
                 onlyPositives
                 (2 : (-1) : 4 : Nil)
+    {-  Move this block comment starting point to enable more tests
         suite "Maybe Monad" do
           let
             -- This is an impractical filtering function,
