@@ -4,15 +4,14 @@ import Data.Maybe
 import Prelude
 
 import Control.Apply (lift2)
-import Data.AddressBook (Address, address)
-import Data.AddressBook.Validation (Errors, matches)
+import Data.AddressBook (Address, PhoneNumber, address)
+import Data.AddressBook.Validation (Errors, matches, nonEmpty, validateAddress, validatePhoneNumbers)
 import Data.Generic.Rep (class Generic)
--- import Data.Newtype (traverse)
 import Data.Show.Generic (genericShow)
 import Data.String.Regex (Regex)
 import Data.String.Regex.Flags (noFlags)
 import Data.String.Regex.Unsafe (unsafeRegex)
-import Data.Traversable (class Foldable, class Traversable, foldl, foldr, foldMap, traverse, sequence)
+import Data.Traversable (class Foldable, class Traversable, foldMap, foldl, foldr, sequence, traverse)
 import Data.Validation.Semigroup (V)
 
 -- Note to reader: Add your solutions to this file
@@ -91,9 +90,56 @@ instance foldableTree :: Foldable Tree where
 
 
 instance traversableTree :: Traversable Tree where
+--traverse :: forall a b m. Applicative m => (a -> m b) -> t a -> m (t b)
   traverse _ Leaf = pure Leaf
   traverse f (Branch l v r) = Branch <$> traverse f l <*> f v <*> traverse f r
 
+--sequence :: forall a m. Applicative m => t (m a) -> m (t a)
   sequence :: forall a m. Applicative m => Tree (m a) -> m (Tree a)
   sequence Leaf = pure Leaf
   sequence (Branch l v r) = Branch <$> sequence l <*> v <*> sequence r
+
+
+traversePreOrder :: forall a m b. Applicative m => (a -> m b) -> Tree a -> m (Tree b)
+traversePreOrder _ Leaf = pure Leaf
+traversePreOrder f (Branch l v r) = ado
+  vv <- f v
+  ll <- traversePreOrder f l
+  rr <- traversePreOrder f r
+  in Branch ll vv rr
+
+traversePostOrder :: forall a m b. Applicative m => (a -> m b) -> Tree a -> m (Tree b)
+traversePostOrder _ Leaf = pure Leaf
+traversePostOrder f (Branch l v r) = ado
+  ll <- traversePostOrder f l
+  rr <- traversePostOrder f r
+  vv <- f v
+  in Branch ll vv rr
+
+
+type Person
+  = { firstName :: String
+    , lastName :: String
+    , homeAddress :: Maybe Address
+    , phones :: Array PhoneNumber
+    }
+
+person :: String -> String -> Maybe Address -> Array PhoneNumber -> Person
+person firstName lastName homeAddress phones = { firstName, lastName, homeAddress, phones }
+
+validatePersonOptionalAddress :: Person -> V Errors Person
+validatePersonOptionalAddress p =
+  person <$> nonEmpty "First Name" p.firstName
+         <*> nonEmpty "Last Name" p.lastName
+         <*> traverse validateAddress p.homeAddress
+         <*> validatePhoneNumbers "Phone Numbers" p.phones
+
+--traverse :: forall a b m. Applicative m => (a -> m b) -> t a -> m (t b)
+--sequence :: forall a m. Applicative m => t (m a) -> m (t a)
+
+
+sequenceUsingTraverse :: forall a m t. Applicative m => Traversable t => t (m a) -> m (t a)
+sequenceUsingTraverse = traverse identity
+
+traverseUsingSequence :: forall a b m t. Applicative m => Traversable t => (a -> m b) -> t a -> m (t b)
+traverseUsingSequence f a = sequence $ map f a

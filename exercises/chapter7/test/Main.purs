@@ -191,7 +191,6 @@ main =
             $ runWriter
             $ traverse (\x -> tell [ x ])
             $ Branch (Branch (leaf 1) 2 (leaf 3)) 4 (Branch (leaf 5) 6 (leaf 7))
-    {-  Move this block comment starting point to enable more tests
       test "Exercise - traversePreOrder" do
         Assert.equal (1 .. 7)
           $ snd
@@ -242,6 +241,7 @@ main =
           Assert.equal Nothing
             $ traverseUsingSequence fromNumber [ 1.0, 2.7 ]
 
+    {-  Move this block comment starting point to enable more tests
 -}
 runChapterExamples :: TestSuite
 runChapterExamples =
