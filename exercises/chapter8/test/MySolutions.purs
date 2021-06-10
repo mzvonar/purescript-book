@@ -3,13 +3,19 @@ module Test.MySolutions where
 import Data.Maybe
 import Prelude
 
+import Control.Apply (lift2)
+import Control.Monad.ST (ST, for, run)
+import Control.Monad.ST.Ref (modify, new, read, write)
+import Control.Plus (empty)
 import Data.Array (head, tail, sort, nub)
 import Data.Foldable (foldM, sum)
-import React.Basic.DOM (aside)
+import Data.Int (toNumber)
 import Data.List (List(..), (:), filter, reverse)
--- import Data.List.Lazy.Types (List(..))
-import Control.Plus (empty)
-import Control.Apply (lift2)
+import Effect (Effect)
+import Effect.Exception (error)
+import Effect.Exception (throwException)
+import Math (pow) as Math
+import React.Basic.DOM (aside)
 
 -- Note to reader: Add your solutions to this file
 
@@ -112,11 +118,56 @@ filterM f as = foldM ff Nil $ reverse as
                 then b:acc
                 else acc
 
--- filterM f as = do
---   a <- pure as
---   is <- f a
---   if is
---     then a
---     else empty  
 
--- filterM predicate as
+exceptionDivide :: Int -> Int -> Effect Int
+exceptionDivide _ 0 = throwException $ error "div zero"
+exceptionDivide a b = pure $ a / b
+
+estimatePi :: Int -> Number
+estimatePi n = run do
+    ref <- new { x: 0.0, n: 1 }
+    for 1 n \_ ->
+      modify
+        ( \o ->
+            { x: o.x + (series $ toNumber o.n)
+            , n: o.n + 1
+            }
+        )
+        ref
+    final <- read ref
+    pure $ 4.0 * final.x
+      where
+        series :: Number -> Number
+        series k = (Math.pow (-1.0) $ k + 1.0) / (2.0*k - 1.0)
+
+fibonacci :: Int -> Int
+fibonacci n = run do
+    ref <- new { a: 0, b: 1 }
+    for 0 n \_ ->
+      modify
+        ( \o ->
+            { b: o.a + o.b
+            , a: o.b
+            }
+        )
+        ref
+    final <- read ref
+    pure final.a
+
+fibonacci' :: Int -> Int
+fibonacci' 0 = 0
+fibonacci' 1 = 1
+fibonacci' n =
+  run
+    ( do
+        x <- new 0
+        y <- new 1
+        for 2 n \k -> do
+          x' <- read x
+          y' <- read y
+          _ <- write (x' + y') y
+          write y' x
+        x' <- read x
+        y' <- read y
+        pure $ x' + y'
+    )

@@ -58,7 +58,6 @@ main =
             $ filterM
                 onlyPositives
                 (2 : (-1) : 4 : Nil)
-    {-  Move this block comment starting point to enable more tests
         suite "Maybe Monad" do
           let
             -- This is an impractical filtering function,
@@ -101,6 +100,7 @@ main =
             $ Assert.equal 102334155 (fibonacci 40)
           test "45th Fibonacci number"
             $ Assert.equal 1134903170 (fibonacci 45)
+    {-  Move this block comment starting point to enable more tests
 
 -}
 runChapterExamples :: TestSuite
