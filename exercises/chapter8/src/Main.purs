@@ -3,8 +3,8 @@ module Main where
 import Prelude
 
 import Data.AddressBook (PhoneNumber, examplePerson)
-import Data.AddressBook.Validation (Errors, validatePerson')
-import Data.Array (mapWithIndex, updateAt)
+import Data.AddressBook.Validation (Errors, Field(..), ValidationError(..), validatePerson')
+import Data.Array (mapWithIndex, updateAt, filter, null)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Tuple (Tuple(..))
@@ -28,25 +28,24 @@ renderValidationErrors :: Errors -> Array R.JSX
 renderValidationErrors [] = []
 renderValidationErrors xs =
   let
-    renderError :: String -> R.JSX
-    renderError err = D.li_ [ D.text err ]
+    renderError :: ValidationError -> R.JSX
+    renderError (ValidationError err _) = D.div 
+      { className: "alert alert-danger row"
+      , children: [ D.text err]
+      }
   in
-    [ D.div
-        { className: "alert alert-danger row"
-        , children: [ D.ul_ (map renderError xs) ]
-        }
-    ]
+    [ D.div_ $ map renderError xs]
 
 -- Helper function to render a single form field with an
 -- event handler to update
-formField :: String -> String -> String -> (String -> Effect Unit) -> R.JSX
-formField name placeholder value setValue =
+formField :: Field -> String -> String -> (String -> Effect Unit) -> R.JSX
+formField field placeholder value setValue =
   D.label
     { className: "form-group row"
     , children:
         [ D.div
             { className: "col-sm col-form-label"
-            , children: [ D.text name ]
+            , children: [ D.text $ show field ]
             }
         , D.div
             { className: "col-sm"
@@ -68,6 +67,30 @@ formField name placeholder value setValue =
         ]
     }
 
+errorForField :: Errors -> Field -> R.JSX
+errorForField [] f = mempty
+errorForField es f = 
+  if null fieldErrors
+    then mempty
+    else
+      D.div 
+          { className: "alert alert-danger row"
+          , children: map (\(ValidationError error _) -> D.text error) fieldErrors
+          }
+  where
+    fieldErrors = filter (\(ValidationError _ ef) -> ef == f) es
+
+formFieldWithError :: Errors -> Field -> String -> String -> (String -> Effect Unit) -> R.JSX
+formFieldWithError e f p v s = 
+  D.div
+    { className: "row"
+    , children:
+        [
+          formField f p v s,
+          errorForField e f
+        ]
+    }
+
 mkAddressBookApp :: Effect (ReactComponent {})
 mkAddressBookApp =
   -- incoming \props are unused
@@ -81,6 +104,8 @@ mkAddressBookApp =
         Left  e -> e
         Right _ -> []
 
+      formField = formFieldWithError errors
+
       -- helper-function to return array unchanged instead of Nothing if index is out of bounds
       updateAt' :: forall a. Int -> a -> Array a -> Array a
       updateAt' i x xs = fromMaybe xs (updateAt i x xs)
@@ -89,7 +114,7 @@ mkAddressBookApp =
       renderPhoneNumber :: Int -> PhoneNumber -> R.JSX
       renderPhoneNumber index phone =
         formField
-          (show phone."type")
+          (PhoneField phone."type")
           "XXX-XXX-XXXX"
           phone.number
           (\s -> setPerson _ { phones = updateAt' index phone { number = s } person.phones })
@@ -101,29 +126,28 @@ mkAddressBookApp =
       $ D.div
           { className: "container"
           , children:
-              renderValidationErrors errors
-                <> [ D.div
-                      { className: "row"
-                      , children:
-                          [ D.form_
-                              $ [ D.h3_ [ D.text "Basic Information" ]
-                                , formField "First Name" "First Name" person.firstName \s ->
-                                    setPerson _ { firstName = s }
-                                , formField "Last Name" "Last Name" person.lastName \s ->
-                                    setPerson _ { lastName = s }
-                                , D.h3_ [ D.text "Address" ]
-                                , formField "Street" "Street" person.homeAddress.street \s ->
-                                    setPerson _ { homeAddress { street = s } }
-                                , formField "City" "City" person.homeAddress.city \s ->
-                                    setPerson _ { homeAddress { city = s } }
-                                , formField "State" "State" person.homeAddress.state \s ->
-                                    setPerson _ { homeAddress { state = s } }
-                                , D.h3_ [ D.text "Contact Information" ]
-                                ]
-                              <> renderPhoneNumbers
+            [ D.div
+                { className: "row"
+                , children:
+                    [ D.form_
+                        $ [ D.h3_ [ D.text "Basic Information" ]
+                          , formField FirstNameField "First Name" person.firstName \s ->
+                              setPerson _ { firstName = s }
+                          , formField LastNameField "Last Name" person.lastName \s ->
+                              setPerson _ { lastName = s }
+                          , D.h3_ [ D.text "Address" ]
+                          , formField StreetField "Street" person.homeAddress.street \s ->
+                              setPerson _ { homeAddress { street = s } }
+                          , formField CityField "City" person.homeAddress.city \s ->
+                              setPerson _ { homeAddress { city = s } }
+                          , formField StateField "State" person.homeAddress.state \s ->
+                              setPerson _ { homeAddress { state = s } }
+                          , D.h3_ [ D.text "Contact Information" ]
                           ]
-                      }
-                  ]
+                        <> renderPhoneNumbers
+                    ]
+                }
+            ]
           }
 
 main :: Effect Unit
