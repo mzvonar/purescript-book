@@ -54,3 +54,75 @@ exports.quadraticRootsImpl = pair => quadratic => {
 
     return pair(first)(second);
 }
+
+exports.unsafeUndefinedValue = a => a;
+
+
+exports.valuesOfMapJson = a => Array.from(new Set(new Map(a).values()));
+
+
+exports.quadraticRootsSetJson = quadratic => {
+    const { a, b , c } = quadratic;
+
+    const disc = (b*b) - (4*a*c);
+
+    let first;
+    let second;
+    if(disc < 0) {
+        const sq = Math.sqrt(-disc);
+        first = {
+            real: -b / (2*a),
+            imag: -sq / (2*a)
+        };
+        second = {
+            real: (-1 * b) / (2*a),
+            imag: sq / (2*a)
+        }
+    }
+    else {
+        const sq = Math.sqrt(disc);
+        first = {
+            real: (-b + sq) / (2*a),
+            imag: 0
+        };
+        second = {
+            real: (-b - sq) / (2*a),
+            imag: 0
+        }
+    }
+
+    return Array.from(new Set([first, second]));
+}
+
+exports.safeQuadraticRootsJson = quadratic => {
+    const { a, b , c } = quadratic;
+
+    const disc = (b*b) - (4*a*c);
+
+    let first;
+    let second;
+    if(disc < 0) {
+        const sq = Math.sqrt(-disc);
+        first = {
+            real: -b / (2*a),
+            imag: -sq / (2*a)
+        };
+        second = {
+            real: (-1 * b) / (2*a),
+            imag: sq / (2*a)
+        }
+    }
+    else {
+        const sq = Math.sqrt(disc);
+        first = {
+            real: (-b + sq) / (2*a),
+            imag: 0
+        };
+        second = {
+            real: (-b - sq) / (2*a),
+            imag: 0
+        }
+    }
+
+    return [first, second];
+}
