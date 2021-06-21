@@ -12,6 +12,7 @@ You can edit this file as you like.
   , "foldable-traversable"
   , "identity"
   , "lists"
+  , "math"
   , "maybe"
   , "newtype"
   , "node-readline"
