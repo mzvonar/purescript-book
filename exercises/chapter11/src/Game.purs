@@ -99,5 +99,13 @@ game ["debug"] = do
       state :: GameState <- get
       tell (L.singleton (show state))
     else tell (L.singleton "Not running in debug mode.")
+
+game ["cheat"] = do
+  GameState state <- get
+  tell (L.singleton ("You are cheating"))
+  for_ (M.lookup state.player state.items) $ \items ->
+    for_ items pickUp
+  -- pure unit
+
 game [] = pure unit
 game _  = tell (L.singleton "I don't understand.")

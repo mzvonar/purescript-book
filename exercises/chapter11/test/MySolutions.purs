@@ -8,19 +8,20 @@ import Prelude
 
 import Control.Monad.Except (ExceptT, runExceptT, throwError)
 import Control.Monad.Reader (Reader, ReaderT, ask, local, mapReader, runReader, runReaderT)
-import Data.Array (foldr, snoc)
+import Data.Array (foldr, snoc, many, some)
 import Data.Foldable (traverse_, foldM)
 import Data.Identity (Identity)
 import Data.Maybe (Maybe(..))
 import Data.Monoid (power)
 import Data.Monoid.Additive (Additive(..))
-import Data.String (Pattern(..), joinWith, stripPrefix)
+import Data.String (Pattern(..), joinWith, stripPrefix, take, drop, toUpper, toLower)
 import Data.String.CodeUnits (toCharArray)
 import Data.Traversable (sequence)
 import Data.Tuple (Tuple(..))
 import Effect.Console (logShow)
-import Split (Parser)
+import Split (Parser, Errors, Log)
 import Data.Newtype (unwrap)
+import Data.Either (Either(..))
 
 -- sumArray :: Array Int -> State Int Unit
 -- sumArray = traverse_ \n -> modify \sum -> sum + n
@@ -142,7 +143,7 @@ string prefix = do
   s <- get
   lift $ tell ["The state is " <> s]
   case stripPrefix (Pattern prefix) s of
-    Nothing -> lift $ lift $ throwError ["Could not parse"]
+    Nothing -> throwError ["Could not parse"]
     Just suffix -> do
       put suffix
       pure prefix
@@ -161,3 +162,29 @@ indent' = local $ (+) 1
 
 render' :: DocWriter -> String
 render' r = joinWith "\n" $ unwrap $ execWriterT $ runReaderT r 0
+
+type NewParser = ExceptT Errors (StateT String (WriterT Log Identity))
+
+runParser' :: forall a. NewParser a -> String -> Tuple (Tuple (Either Errors a) String) Log
+runParser' p s = runWriter $ runStateT (runExceptT p) s
+
+
+string' :: String -> NewParser String
+string' prefix = do
+  s <- get
+  tell ["The state is " <> s]
+  case stripPrefix (Pattern prefix) s of
+    Nothing -> throwError ["Could not parse"]
+    Just suffix -> do
+      put suffix
+      pure prefix
+
+split :: NewParser String
+split = do
+  s <- get
+  tell ["The state is " <> show s]
+  case s of
+    "" -> throwError ["Empty string"]
+    _ -> do
+      put (drop 1 s)
+      pure (take 1 s)

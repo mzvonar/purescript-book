@@ -98,6 +98,6 @@ main =
                   line' "So am I"
                   indent' $ do
                     line' "I am even more indented"
-
     {-  Move this block comment starting point to enable more tests
+
 -}
