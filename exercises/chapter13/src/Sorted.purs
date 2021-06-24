@@ -3,9 +3,12 @@ module Sorted where
 import Prelude
 
 import Data.Array (sort)
-import Test.QuickCheck.Arbitrary (class Arbitrary, arbitrary)
+import Test.QuickCheck.Arbitrary (class Arbitrary, class Coarbitrary, arbitrary, coarbitrary)
 
 newtype Sorted a = Sorted (Array a)
+
+instance coarbSorted :: Arbitrary a => Coarbitrary (Sorted a) where
+  coarbitrary a = coarbitrary a
 
 sorted :: forall a. Sorted a -> Array a
 sorted (Sorted xs) = xs
